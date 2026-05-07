@@ -663,6 +663,24 @@ footer{
   </div>
 </footer>
 
+<!-- Facebook Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '949510194357765');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=949510194357765&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Facebook Pixel Code -->
+
 <!-- Google Analytics - Substitua GA_MEASUREMENT_ID pelo seu ID real -->
 <!-- 
 <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
@@ -713,6 +731,14 @@ async function go(e, formId, okId) {
   const email = emailInput.value;
   const submitBtn = form.querySelector('button[type=submit]');
   
+  // Facebook Pixel - Event: InitiateCheckout (início do cadastro)
+  if (typeof fbq !== 'undefined') {
+    fbq('track', 'InitiateCheckout', {
+      content_name: formId === 'heroForm' ? 'Hero Form' : 'CTA Form',
+      content_category: 'Waitlist'
+    });
+  }
+  
   // Desabilitar campos durante envio
   nameInput.disabled = true;
   emailInput.disabled = true;
@@ -744,19 +770,28 @@ async function go(e, formId, okId) {
       const currentCount = parseInt(counterEl.textContent.replace(/\./g, '')) || 847;
       counterEl.textContent = (currentCount + 1).toLocaleString('pt-BR');
       
-      // Tracking de conversão (Google Analytics)
+      // Facebook Pixel - Event: Lead (cadastro realizado)
+      if (typeof fbq !== 'undefined') {
+        fbq('track', 'Lead', {
+          content_name: formId === 'heroForm' ? 'Hero Form Submission' : 'CTA Form Submission',
+          content_category: 'Waitlist',
+          value: 30.00,
+          currency: 'BRL'
+        });
+        
+        // Facebook Pixel - Event: CompleteRegistration
+        fbq('track', 'CompleteRegistration', {
+          content_name: 'Precifika Waitlist',
+          status: 'completed'
+        });
+      }
+      
+      // Google Analytics - Event: conversion
       if (typeof gtag !== 'undefined') {
         gtag('event', 'conversion', {
           'send_to': 'AW-CONVERSION_ID/CONVERSION_LABEL',
           'event_category': 'Lead',
           'event_label': formId === 'heroForm' ? 'Hero Form' : 'CTA Form'
-        });
-      }
-      
-      // Facebook Pixel (se instalado)
-      if (typeof fbq !== 'undefined') {
-        fbq('track', 'Lead', {
-          content_name: formId === 'heroForm' ? 'Hero Form' : 'CTA Form'
         });
       }
     } else {
